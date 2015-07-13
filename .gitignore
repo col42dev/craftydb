@@ -1,0 +1,5 @@
+node_modules
+.tmp
+.sass-cache
+bower_components
+publishToEC2.sh
