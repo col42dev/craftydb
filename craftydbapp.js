@@ -6,6 +6,7 @@
 var express = require('express');
 var bodyParser  = require('body-parser');
 var mongojs = require('mongojs');
+
 //var ScoreTable = require('./scoretable').ScoreTable;
 
 
@@ -48,7 +49,7 @@ console.log("running");
 
 //@http://howtonode.org/node-js-and-mongodb-getting-started-with-mongoj
 var databaseUrl = "test"; // "username:password@example.com/mydb"
-var collections = ["accounts"]
+var collections = ["timers"]
 var db = mongojs(databaseUrl, collections);
 
 /*
@@ -59,20 +60,15 @@ db.accounts.save({tag: "srirangan@gmail.com", moves: 100, date: Date()}, functio
 */
 console.log("find");
 
-db.accounts.find(function(err, accounts) {
-  if( err || !accounts) {
-    console.log("No accounts found");
-  }else accounts.forEach( function(account) {
-    console.log("Accounts found:" + JSON.stringify(account));
+db.timers.find(function(err, timers) {
+  if( err || !timers) {
+    console.log("No timers found");
+  }else timers.forEach( function(timer) {
+    console.log("Timers found:" + JSON.stringify(timer));
   } );
 });
 
-var accounts = [
-  { tag : 'Audrey Hepburn', moves : 750, date: Date(), gameLevel:0},
-  { tag : 'Walt Disney', moves : 666, date: Date(), gameLevel:0},
-  { tag : 'Unknown', moves : 490, date: Date(), gameLevel:0},
-  { tag : 'Neale Donald Walsch', moves : 950, date: Date(), gameLevel:0}
-];
+
 
 console.log("app.all");
 app.all('/*', function(req, res, next) {
@@ -86,12 +82,15 @@ app.all('/*', function(req, res, next) {
 
 // curl -H "Accept: application/json" -H "Content-type: application/json" -X POST -d '{"tag":"noob","score":43,"date":"now"}' http://localhost:8080/accounts
 console.log("app.post");
-app.post('/accounts', function(req, res) {
+app.post('/createtimer', function(req, res) {
     
+  req.body.starttime = Math.floor(new Date() / 1000);
+  req.body.remaining = req.body.duration;
+  req.body.expired = false;
   console.log("app.post");
-  console.log("post account");
-  console.log("body:" + req.body);
-  console.log("req:" + req);
+  console.log("post timer");
+  console.log("body:" + JSON.stringify(req.body));
+  //console.log("req:" + JSON.stringify(req));
   
   req.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Origin", "*");
@@ -105,18 +104,13 @@ app.post('/accounts', function(req, res) {
     return res.send('Error 400: Post syntax incorrect.');
   }*/
 
-  console.log("new account");
+  console.log("new timer");
 
-    db.accounts.save(req.body, function(err, saved) {
-        if( err || !saved ) console.log("Account not saved");
-        else console.log("Account saved");
+    db.timers.save(req.body, function(err, saved) {
+        if( err || !saved ) console.log("Timer not saved");
+        else console.log("Timer saved");
     });
 
-  var newAccount = {
-    body : req.body,
-  };
-
-  //scores.push(newScore);
   
   res.header("Access-Control-Allow-Origin", "*");
   res.json(true);
@@ -137,57 +131,132 @@ app.get('/', function(req, res) {
   res.header("Access-Control-Allow-Origin", "*");
   //res.json(scores);
   
-    db.accounts.find(function(err, accounts) {
-        if( err || !accounts) console.log("No accounts found");
+    db.timers.find(function(err, timers) {
+        if( err || !timers) console.log("No timers found");
         else {
-            console.log("accounts found:" + accounts.length);
-            res.json(accounts);
+            console.log("timers found:" + timers.length);
+
+            var now = Math.floor( new Date() / 1000);
+            timers.forEach( function( timer ) {
+              timer.remaining = timer.duration - (now - timer.starttime);
+            });
+
+
+            res.json(timers);
         };
     });
 });
 
 
+
 // curl -H "Accept: application/json" -H "Content-type: application/json" -X GET http://localhost:8080/removealldocuments
-app.get('/removealldocuments', function(req, res) {
+app.get('/deletealltimers', function(req, res) {
 
-  console.log("/removealldocuments");
+  console.log("/deletealltimers");
 
-  db.accounts.remove(req.body, function(err, saved) {
-      if( err || !saved ) console.log("Account not saved");
-      else console.log("Account saved");
+  db.timers.remove(req.body, function(err, saved) {
+      if( err || !saved ) console.log("Timer not saved");
+      else console.log("Timer saved");
   });
 
-  db.collection('accounts',function(err, collection) {
+  db.collection('timers',function(err, collection) {
     collection.remove({},function(err, removed){
-        console.log("removealldocuments err:" + removed);
-        });
+        console.log("deletealltimers err:" + removed);
+      });
   });
 
+  res.send('success');
+
 });
 
-/*
-console.log("app.get");
-app.get('/score/random', function(req, res) {
-  var id = Math.floor(Math.random() * scores.length);
-  var q = scores[id];
-  res.header("Access-Control-Allow-Origin", "*");
-  res.json(q);
+//
+app.get('/deletetimer', function(req, res) {
+
+  console.log("/deletetimer");
+  //console.log("res:" + JSON.stringify(res));
+  console.log("res:" + res);
+  console.log("req:" + req);
+
+
+
+
+  console.log("req.query.timerId:", req.query.timerId);
+
+
+  db.timers.remove( {'_id': mongojs.ObjectId(req.query.timerId)},  function(err, result) {
+      if( err ) { 
+        console.log("remove timer failed:" + err);
+      } 
+      console.log(result);
+  } );
+
+  res.send('success');
+  
 });
 
-console.log("app.get");
-app.get('/score/:id', function(req, res) {
-  if(scores.length <= req.params.id || req.params.id < 0) {
-    res.statusCode = 404;
-    return res.send('Error 404: No quote found');
-  }
 
-  var q = scores[req.params.id];
-  res.header("Access-Control-Allow-Origin", "*");
-  res.json(q);
-});
-*/
+ /**
+ * @desc  poll for expired timers. remove identified expired timers from db.
+ * @return 
+ */
+setInterval(function() {
+        
+    var now = Math.floor(new Date() / 1000);
+    var pendingExpired = [];
 
+    db.timers.find(function(err, timers) {
+        if( err || !timers) {
+
+        } else {
+          timers.forEach( function( timer){
+               //console.log(now - timer.starttime + " ... " + timer.duration);
+              timer.remaining = timer.duration - (now - timer.starttime);
+              if ( now - timer.starttime > timer.duration) {
+
+
+                if (timer.expired === false) {
+                  console.log('calling remove on' + timer._id);
+                  db.timers.remove( {'_id': mongojs.ObjectId(timer._id)},  
+                    function(err, result) {
+                      console.log('Removing expired timer...')
+                      if( err ) { 
+                        console.log("remove timer failed:" + err);
+                      } 
+                      console.log(result);
+                  });
+                }
+                timer.expired = true;
+
+
+              }
+          });
+        }
+    });
+
+    //console.log(pendingExpired.length);
+
+    // remove expired timers
+    pendingExpired.forEach( function( thisTimer) {
+
+        db.timers.remove( {'_id': mongojs.ObjectId(thisTimer._id)},  
+          function(err, result) {
+            console.log('Removing expired timer...')
+            if( err ) { 
+              console.log("remove timer failed:" + err);
+            } 
+            console.log(result);
+
+          });
+
+    });
+
+  }, 1000);
 
 
 console.log("app.listen");
 app.listen(8080);
+
+
+//db.timers.remove( {"_id": ObjectId("55ba4e39a72d351604c9a0a6")});
+
+
