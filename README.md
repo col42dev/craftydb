@@ -1,5 +1,8 @@
 # craftydb
-backend for crafty app.
+
+craftydb is the server implementation for [crafty](https://github.com/col42dev/crafty) [MEAN](http://mean.io/#!/) stack app.
+It is a nodejs app with REST API which connects to a mongojs instance.
+This is the setup for running from Linux EC2 or OS X.
 
 **Starting crafty db app and dependencies on a EC2 Linux / OS X**
 
