@@ -84,7 +84,7 @@ This is the setup for running from Linux EC2 or OS X.
 
 Fork mongod instance so that it is not parented to current shell instance.
 
-    $bin/mongod --httpinterface --rest --fork  --logpath ~/log/mongodb.log
+    $ bin/mongod --httpinterface --rest --fork  --logpath ~/log/mongodb.log
     
     about to fork child process, waiting until server is ready for connections.
     forked process: 6754
@@ -93,7 +93,7 @@ Fork mongod instance so that it is not parented to current shell instance.
     $ ps -A
     6717 ?        00:00:05 mongod
 
-    $bin/mongo shell
+    $ bin/mongo shell
     
     MongoDB shell version: 3.0.4
     connecting to: shell
@@ -128,28 +128,24 @@ view instance from browser
 
     $ http://localhost:28017/
  
- 
-**install nodejs instance (linux)**
-
-    $ sudo npm install -g mongojs
 
 **start nodejs instance (linux)**
 
 Start instance in background 'no hang-up' 
 
-    $nohup node craftydbapp.js >/dev/null 2>&1 &
+    $ nohup node craftydbapp.js >/dev/null 2>&1 &
     [1] 6776
     
-    $ps -A
+    $ ps -A
     6896 pts/0    00:00:02 node
     
     
-**populate db from command line**
+**(debug) populate db from command line**
 
-    curl -H "Accept: application/json" -H "Content-type: application/json" -X POST -d '{"tag":"noob","score":43,"date":"now"}' http://localhost:8080/accounts
+    $ curl -H "Accept: application/json" -H "Content-type: application/json" -X POST -d '{"tag":"noob","score":43,"date":"now"}' http://localhost:8080/accounts
 
 
-    curl -H "Accept: application/json" -H "Content-type: application/json" -X POST -d '{"tag":"noob","score":43,"date":"now"}' http://ec2-54-201-237-107.us-west-2.compute.amazonaws.com:8080/accounts
+    $ curl -H "Accept: application/json" -H "Content-type: application/json" -X POST -d '{"tag":"noob","score":43,"date":"now"}' http://ec2-54-201-237-107.us-west-2.compute.amazonaws.com:8080/accounts
 
 **view db content from browser**
 
