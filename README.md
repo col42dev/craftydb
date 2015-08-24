@@ -38,7 +38,7 @@ This is the setup for running from Linux EC2 or OS X.
        fetch : https://nodejs.org/dist/v0.12.7/node-v0.12.7-linux-x64.tar.gz
     installed : v0.12.7
     
-** install local package dependancies **
+**install local package dependancies**
 
     $ npm install express
     $ npm install body-parser
